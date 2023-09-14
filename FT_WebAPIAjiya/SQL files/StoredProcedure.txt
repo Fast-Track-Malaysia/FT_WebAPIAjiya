@@ -1,6 +1,6 @@
-﻿USE [FT_WebAPIAjiya]
+﻿﻿USE [FT_WebAPIAjiya]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_execaction]    Script Date: 14/9/2023 11:00:41 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_execaction]    Script Date: 14/9/2023 11:00:41 AM ****/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -17,13 +17,6 @@ AS
 BEGIN
 	IF @type = 'Quotation'
 	BEGIN
-		-- check for any duplicate in quotation number
-		 IF EXISTS (SELECT 1 FROM quotationtable WHERE QuotationNo = (SELECT QuotationNo FROM OPENJSON(@json) WITH (QuotationNo nvarchar(50))))
-        BEGIN
-            -- if quotation already exist, raise error		
-            RAISERROR('QuotationNo already exists.', 16, 1);
-
-        END
 		
 		--create temp table
 		CREATE TABLE #tempjson (
@@ -40,6 +33,14 @@ BEGIN
 			QuotationNo nvarchar(50),
 			CardCode nvarchar(50)
 		)
+
+		-- check for any duplicate in quotation number
+		 IF EXISTS (SELECT 1 FROM quotationtable WHERE QuotationNo = (SELECT QuotationNo FROM #tempjson))
+        BEGIN
+            -- if quotation already exist, raise error		
+            RAISERROR('QuotationNo already exists.', 16, 1);
+
+        END
 
 		--insert data from #tempjson into quotationtable
 		INSERT INTO quotationtable (QuotationNo, CardCode)
