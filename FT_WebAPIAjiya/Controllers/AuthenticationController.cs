@@ -52,7 +52,7 @@ namespace FT_WebAPIAjiya.Controllers
                 using (SqlConnection conn = new SqlConnection(configuration.GetConnectionString("Default")))
                 {
                     if (conn.State == System.Data.ConnectionState.Closed) conn.Open();
-
+                    
                     var userExists = CheckIfUserExists(input.Username);
                     if (userExists == null)
                     {

@@ -1,0 +1,35 @@
+﻿ALTER PROCEDURE [dbo].[getOpenFTEndPointLog]
+	-- Add the parameters for the stored procedure here
+	@EndPointProcessName nvarchar(50)
+AS
+BEGIN
+--begin transaction
+
+	--select T0.* from FTEndPointLogs T0 inner join FTEndPoints T1 on T0.EndPointID = T1.ID
+	--where T1.ProcessName = @EndPointProcessName 
+	--and CallAttempt = 0
+	--order by T0.ID
+
+	--DECLARE @sql NVARCHAR(MAX) = '
+	--update T0
+	--SET T0.[CallAttempt] = T0.[CallAttempt] + 1
+	--OUTPUT DELETED.*
+	--FROM FTEndPointLogs T0
+	--INNER JOIN FTEndPoints T1 ON T0.EndPointID = T1.ID
+	--WHERE T1.ProcessName = @EndPointProcessName
+	--AND CallAttempt = 0
+	--'
+
+	--EXEC sp_executesql @sql, N'@EndPointProcessName NVARCHAR(50)', @EndPointProcessName = @EndPointProcessName
+
+	update T0
+	SET T0.[CallAttempt] = T0.[CallAttempt] + 1
+	OUTPUT DELETED.*
+	FROM FTEndPointLogs T0
+	INNER JOIN FTEndPoints T1 ON T0.EndPointID = T1.ID
+	WHERE T1.ProcessName = @EndPointProcessName
+	AND CallAttempt = 0
+
+--commit transaction
+
+END

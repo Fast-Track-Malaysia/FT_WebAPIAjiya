@@ -71,7 +71,5 @@ namespace FT_WebAPIAjiya.Controllers
             return Ok(new { error = false, errormessage = "" });
         }
 
-        
-
     }
 }
