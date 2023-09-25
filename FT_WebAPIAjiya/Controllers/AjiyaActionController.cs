@@ -49,7 +49,7 @@ namespace FT_WebAPIAjiya.Controllers
                try
                 {
                     
-                    string query = "exec sp_execaction @type, @json";
+                    string query = "exec getOpenFTEndPointLog @type, @json";
 
                     conn.Query(query, new { type = mytype, json = myjson });
                     writeLog.WriteLog($"Log", $"sending Type: [{mytype}] JSON: {myjson}", $"INPUT");
