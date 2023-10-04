@@ -18,7 +18,7 @@ namespace FT_WebAPIAjiya.Controllers
             this.configuration = configuration;
         }
 
-        [HttpPost]
+        [HttpPost(nameof(Create))]
         public IActionResult Create([FromBody] User input)
         {
             try

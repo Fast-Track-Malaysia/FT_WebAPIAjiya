@@ -1,0 +1,114 @@
+﻿USE [FT_WebAPIAjiya]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_execaction]    Script Date: 4/10/2023 10:46:29 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+ALTER PROCEDURE [dbo].[sp_execaction] 
+	@type nvarchar(50),
+	@json nvarchar(max)
+AS
+BEGIN
+	IF @type = 'Quotation'
+	BEGIN
+		
+		--create temp table
+		CREATE TABLE #tempjson (
+			docNo nvarchar(50),
+			cardCode nvarchar(50),
+			company nvarchar(50),
+			docStatus nvarchar(50)
+		)
+
+		--use OPENJSON to pull values from the JSON file and store it inside the temp table
+		INSERT INTO #tempjson (docNo, cardCode,company ,docStatus)
+		SELECT docNo, cardCode,company, docStatus
+		FROM OPENJSON(@json)
+		WITH (
+			docNo nvarchar(50),
+			cardCode nvarchar(50),
+			company nvarchar(50),
+			docStatus nvarchar(50)
+		)
+
+		-- check for any duplicate in quotation number
+		 IF EXISTS (SELECT 1 FROM Quotations WHERE docNo = (SELECT docNo FROM #tempjson))
+			BEGIN
+
+				--WHEN UPDATING, check if cardCode is NULL
+				IF (SELECT ISNULL(cardCode, '') FROM #tempjson) = ''
+				BEGIN
+					RAISERROR('cardCode is null', 16, 1);
+					RETURN;
+				END
+
+				--WHEN UPDATING, check if cardCode is NULL
+				IF (SELECT ISNULL(company, '') FROM #tempjson) = ''
+				BEGIN
+					RAISERROR('company is null', 16, 1);
+					RETURN;
+				END
+
+				--WHEN UPDATING, check if the docStatus is valid
+				IF (SELECT docStatus FROM #tempjson) NOT IN ('OPEN', 'CLOSE', 'CANCEL')
+				BEGIN
+					RAISERROR('Invalid docStatus, please use (OPEN, CLOSE, CANCEL)', 16, 1);
+					RETURN;
+				END
+
+			-- if quotation already exists, update the cardCode and docStatus
+			UPDATE Quotations
+			SET 
+			cardCode = (SELECT cardCode FROM #tempjson WHERE docNo = Quotations.docNo),
+			company = (SELECT company FROM #tempjson WHERE docNo = Quotations.docNo),
+			docStatus = (SELECT docStatus FROM #tempjson WHERE docNo = Quotations.docNo)
+			WHERE docNo IN (SELECT docNo FROM #tempjson);
+
+    RETURN;
+        END
+
+		--check if docNo is NULL
+		IF (SELECT ISNULL(docNo, '') FROM #tempjson) = ''
+		BEGIN
+			RAISERROR('docNo is NULL', 16, 1);
+			RETURN;
+		END
+
+
+
+		--check if cardCode is NULL
+		IF (SELECT ISNULL(cardCode, '') FROM #tempjson) = ''
+		BEGIN
+			RAISERROR('cardCode is null', 16, 1);
+			RETURN;
+		END
+
+		--check if cardCode is NULL
+		IF (SELECT ISNULL(company, '') FROM #tempjson) = ''
+		BEGIN
+			RAISERROR('company is null', 16, 1);
+			RETURN;
+		END
+
+		--check if the docStatus is valid
+		IF (SELECT docStatus FROM #tempjson) NOT IN ('OPEN', 'CLOSE', 'CANCEL')
+		BEGIN
+			RAISERROR('Invalid docStatus, please use (OPEN, CLOSE, CANCEL)', 16, 1);
+			RETURN;
+		END
+
+		--insert data from #tempjson into quotationtable
+		INSERT INTO Quotations (docNo, cardCode, company, docStatus)
+		SELECT docNo, cardCode, company, docStatus FROM #tempjson
+
+		DROP TABLE #tempjson
+
+	END
+
+END

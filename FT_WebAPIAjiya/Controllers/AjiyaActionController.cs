@@ -48,26 +48,28 @@ namespace FT_WebAPIAjiya.Controllers
             {
                try
                 {
-                    
-                    string query = "exec getOpenFTEndPointLog @type, @json";
+
+                    //string query = "exec getOpenFTEndPointLog @type, @json";
+
+                    string query = "exec sp_execaction @type, @json";
 
                     conn.Query(query, new { type = mytype, json = myjson });
                     writeLog.WriteLog($"Log", $"sending Type: [{mytype}] JSON: {myjson}", $"INPUT");
 
                     //EXAMPLE JSON TO PARSE IN SWAGGER API: Format as following below:// dun miss the curly brackets
-                    //[{"QuotationNo":"12312","CardCode":"C1231"}]
+                    //[{"docNo":"12000","cardCode":"C1400","company": "FastTrack sdn bhd" ,"docStatus":"OPEN"}]
                     //^ above JSON has successfully added to the database
                 }
                 catch (Exception ex) 
                 {
-                    writeLog.WriteLog($"Log", $"send failed Type: [{mytype}] JSON: {myjson}", $"FAILED. Error: True, Error Message: {ex.Message}");
+                    writeLog.WriteLog($"Log", $"send Type: [{mytype}] JSON: {myjson}", $"FAILED. Error: True, Error Message: {ex.Message}");
                     return BadRequest(new {error= true ,errormessage = ex.Message });
                        
                 }
                 
 
-            }
-            writeLog.WriteLog($"Log", $"send failed Type: {mytype} JSON: {myjson}", $"SUCCESS");
+            }// changed the send type from send failed Type, if theres any error check here
+            writeLog.WriteLog($"Log", $"send Type: {mytype} JSON: {myjson}", $"SUCCESS");
             return Ok(new { error = false, errormessage = "" });
         }
 
